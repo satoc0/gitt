@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/ban-types */
-import Spinnies from '@trufflesuite/spinnies';
 import chalk from 'chalk';
 import { Command } from 'commander';
 import inquirer from 'inquirer';
@@ -10,12 +9,12 @@ import { Runtime } from '../runtime';
 import { AcceptPromise } from '../utils/utils';
 import { GittNotInitializedError } from './command.errors';
 import { Result } from './result';
+import { spinnies } from './spinner';
 
 type TReposActionFn = (
   entry: TRuntimeRepoEntry
 ) => AcceptPromise<IExecutionResult>;
 
-const spinnies = new Spinnies();
 export type TCommandArguments = [object, Command];
 export type TArguments = Record<string, unknown>;
 
@@ -68,9 +67,11 @@ export abstract class CommandBase {
       }
       await this.prepareExecution(args, command);
 
-      const executionResult = await this.runOnAllRepos(entry =>
-        this.execute?.(entry, args, command)
-      );
+      const executionResult = this.execute
+        ? await this.runOnAllRepos(entry =>
+            this.execute?.(entry, args, command)
+          )
+        : [];
 
       const repoWithError = executionResult.filter(result => !result.success);
       const allFail = executionResult.every(result => !result.success);
@@ -113,8 +114,7 @@ export abstract class CommandBase {
         }
       }
     } catch (e) {
-      const error = e as Error;
-      console.log(error.name, error.message, error.stack);
+      console.log(e);
     }
   }
 
@@ -153,25 +153,24 @@ export abstract class CommandBase {
       this.runtime.allRepos.map(async entry => {
         spinnies.add(entry.repo.name);
 
-        const commandOutput = await fn(entry);
+        const executionResult = await fn(entry);
 
-        const result = commandOutput.result;
+        const { result, message, rollbackMessage } = executionResult;
         const success = result.isOk();
-        const message = commandOutput.message;
 
         return {
           result,
           entry,
           success,
           message,
-          rollbackMessage: commandOutput.rollbackMessage,
+          rollbackMessage,
         };
       })
     );
 
     executionResults.forEach(executionResult => {
       const repoName = executionResult.entry.repo.name;
-      const message = executionResult.message.replace(/\n$/, '');
+      const message = executionResult.message?.replace?.(/\n$/, '') || '';
       const nameTitle = executionResult.success
         ? chalk.greenBright(repoName)
         : chalk.redBright(repoName);

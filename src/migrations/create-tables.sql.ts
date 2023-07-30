@@ -12,7 +12,7 @@ const repositoriesTableCreateSQL = `
 export const commitHistoryTableName = 'commit_history';
 const commitHistoryTableCreateSQL = `
   CREATE TABLE IF NOT EXISTS ${commitHistoryTableName} (
-    universal_gitt_commit_id INTEGER PRIMARY KEY UNIQUE,
+    universal_gitt_commit_id INTEGER PRIMARY KEY AUTOINCREMENT,
     hash TEXT,
     branch TEXT,
     repo TEXT,

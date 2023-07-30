@@ -33,7 +33,12 @@ export class CheckoutCommand extends CommandBase {
       entry.sg.raw(['checkout', ...argsArr])
     );
 
-    return { result, message: result.getResultValue() };
+    const resultValue = result.getResultValue();
+
+    return {
+      result,
+      message: result.isOk() ? resultValue || 'Success' : resultValue.message,
+    };
   }
 
   async rollback(
@@ -42,8 +47,12 @@ export class CheckoutCommand extends CommandBase {
     const result = await Result.run(() =>
       entry.sg.raw(['checkout', this.rollbackBranch])
     );
+    const resultValue = result.getResultValue();
 
-    return { result, message: result.getResultValue() };
+    return {
+      result,
+      message: result.isOk() ? resultValue || 'Success' : resultValue.message,
+    };
   }
 
   helper(): AcceptPromise<void> {

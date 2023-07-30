@@ -45,4 +45,12 @@ export class Repository {
       IRepositoryModel[]
     >;
   }
+
+  public removeRepos(repos: IRepositoryModel[]): Promise<unknown> {
+    return this.run(
+      `DELETE FROM ${repositoriesTableName} WHERE name IN (${repos
+        .map(r => `'${r.name}'`)
+        .join(',')}) and path IN (${repos.map(r => `'${r.path}'`).join(',')});`
+    );
+  }
 }
