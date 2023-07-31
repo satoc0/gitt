@@ -16,6 +16,7 @@ The Gitt is a tool that helps you manage multiple Git repositories simultaneousl
 4. Install the required dependencies by running the following command:
    ```
    npm install
+   npm run build
    ```
 5. Create a symbolic link to the CLI tool by running:
    ```
